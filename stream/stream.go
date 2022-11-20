@@ -6,9 +6,22 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 )
 
-func Read(conn net.Conn) (string, error) {
+func ReadExperimental(conn net.Conn) (string, error) {
+	scanner := bufio.NewScanner(conn)
+	var str strings.Builder
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		str.WriteString(line)
+	}
+
+	return str.String(), nil
+}
+
+func Read(conn net.Conn) error {
 	reader := bufio.NewReader(conn)
 	var buffer bytes.Buffer
 
@@ -19,7 +32,7 @@ func Read(conn net.Conn) (string, error) {
 			if err == io.EOF {
 				break
 			}
-			return "", err
+			return err
 		}
 
 		buffer.Write(line)
@@ -28,7 +41,10 @@ func Read(conn net.Conn) (string, error) {
 			break
 		}
 	}
-	return buffer.String(), nil
+
+	fmt.Println(buffer.String())
+
+	return nil
 }
 
 func Write(conn net.Conn, message string) error {
@@ -37,6 +53,8 @@ func Write(conn net.Conn, message string) error {
 	if err != nil {
 		return fmt.Errorf("err while Writing into conn: %w", err)
 	}
+
+	fmt.Println(message)
 
 	return nil
 }
